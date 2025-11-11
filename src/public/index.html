@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Helper - Developer Tools</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛠️ Personal Helper</h1>
+            <p class="subtitle">Your Unified Developer Toolbox</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="pr-analyzer">
+                <span class="tab-icon">🔍</span>
+                <span class="tab-label">PR Analyzer</span>
+            </button>
+            <button class="tab-btn" data-tab="qa-agent">
+                <span class="tab-icon">🧪</span>
+                <span class="tab-label">QA Agent</span>
+            </button>
+            <button class="tab-btn" data-tab="ticket-creator">
+                <span class="tab-icon">🎫</span>
+                <span class="tab-label">Ticket Creator</span>
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <main class="tab-content">
+            <!-- PR Analyzer Tab -->
+            <div class="tab-pane active" id="pr-analyzer">
+                <div class="card">
+                    <h2>PR Analyzer with JIRA Integration</h2>
+                    <p class="description">Analyze GitHub Pull Requests using AI to find bugs, security issues, and validate acceptance criteria.</p>
+                    
+                    <form id="prAnalyzerForm">
+                        <div class="form-group">
+                            <label for="prTicketId">JIRA Ticket ID *</label>
+                            <input
+                                type="text"
+                                id="prTicketId"
+                                placeholder="e.g., PROJ-1234"
+                                required
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prUrls">PR URLs (optional - one per line)</label>
+                            <textarea
+                                id="prUrls"
+                                rows="4"
+                                placeholder="Leave empty to auto-detect PRs from JIRA ticket, or enter URLs:&#10;https://github.com/owner/repo/pull/123&#10;https://github.com/owner/repo2/pull/456"
+                            ></textarea>
+                            <small>Leave empty to automatically detect PRs linked to the JIRA ticket</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <span>🔍 Analyze Pull Requests</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="prResults" class="results-section" style="display: none;"></div>
+            </div>
+
+            <!-- QA Agent Tab -->
+            <div class="tab-pane" id="qa-agent">
+                <div class="card">
+                    <h2>QA Automation Agent</h2>
+                    <p class="description">Automated testing that validates JIRA acceptance criteria against live portals using browser automation.</p>
+                    
+                    <form id="qaAgentForm">
+                        <div class="form-group">
+                            <label for="qaTicketId">JIRA Ticket ID *</label>
+                            <input
+                                type="text"
+                                id="qaTicketId"
+                                placeholder="e.g., PROJ-1234"
+                                required
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="portalUrl">Portal URL to Test *</label>
+                            <input
+                                type="url"
+                                id="portalUrl"
+                                placeholder="e.g., https://qa.yoursite.com"
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <span>🧪 Run QA Tests</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="qaResults" class="results-section" style="display: none;"></div>
+            </div>
+
+            <!-- Ticket Creator Tab -->
+            <div class="tab-pane" id="ticket-creator">
+                <!-- Mode Toggle -->
+                <div class="mode-toggle card">
+                    <div class="mode-toggle-buttons">
+                        <button id="quickModeBtn" class="mode-btn active">
+                            <span class="mode-icon">⚡</span>
+                            <span class="mode-title">Quick Mode</span>
+                            <span class="mode-description">Enter task directly</span>
+                        </button>
+                        <button id="aiAssistantBtn" class="mode-btn">
+                            <span class="mode-icon">💬</span>
+                            <span class="mode-title">AI Assistant</span>
+                            <span class="mode-description">Guided chat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Mode -->
+                <div id="quickModeSection" class="card mode-section">
+                    <h2>Quick Ticket Creation</h2>
+                    <form id="ticketForm">
+                        <div class="form-group">
+                            <label for="taskDescription">Task Description *</label>
+                            <textarea
+                                id="taskDescription"
+                                rows="5"
+                                placeholder="e.g., Create an AWS Codebuild image to run DenoJS tests"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-secondary">
+                                <span>👁️ Generate Preview</span>
+                            </button>
+                            <button type="button" id="createBtn" class="btn btn-primary">
+                                <span>✨ Create in JIRA</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- AI Assistant Mode -->
+                <div id="aiAssistantSection" class="card mode-section" style="display: none;">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3>AI Assistant</h3>
+                            <p class="chat-subtitle">Let me help you create a comprehensive ticket</p>
+                        </div>
+                        
+                        <div id="chatMessages" class="chat-messages"></div>
+
+                        <form id="chatForm" class="chat-input-container">
+                            <textarea
+                                id="chatInput"
+                                placeholder="Type your message..."
+                                rows="2"
+                            ></textarea>
+                            <button type="submit" id="sendMessageBtn" class="btn-send">▶</button>
+                        </form>
+
+                        <div class="chat-actions" id="chatActions" style="display: none;">
+                            <button type="button" id="generateFromChatBtn" class="btn btn-secondary">
+                                <span>👁️ Generate Preview</span>
+                            </button>
+                            <button type="button" id="createFromChatBtn" class="btn btn-primary">
+                                <span>✨ Create in JIRA</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ticketResults" class="results-section" style="display: none;"></div>
+            </div>
+        </main>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Processing your request...</p>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="card error-section" style="display: none;">
+            <h3>Error</h3>
+            <p id="errorMessage"></p>
+        </div>
+
+        <footer>
+            <p>Built with ❤️ for developers | Powered by Claude AI & OpenAI</p>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
+
