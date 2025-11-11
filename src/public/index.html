@@ -159,11 +159,18 @@
                         <form id="chatForm" class="chat-input-container">
                             <textarea
                                 id="chatInput"
-                                placeholder="Type your message..."
+                                placeholder="Type your message or use voice..."
                                 rows="2"
                             ></textarea>
+                            <button type="button" id="voiceBtn" class="btn-voice" title="Voice input">
+                                🎤
+                            </button>
                             <button type="submit" id="sendMessageBtn" class="btn-send">▶</button>
                         </form>
+                        <div id="voiceStatus" class="voice-status" style="display: none;">
+                            <span class="voice-indicator">🔴</span>
+                            <span class="voice-text">Listening...</span>
+                        </div>
 
                         <div class="chat-actions" id="chatActions" style="display: none;">
                             <button type="button" id="generateFromChatBtn" class="btn btn-secondary">

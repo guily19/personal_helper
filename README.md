@@ -26,6 +26,7 @@ A comprehensive web application that combines three powerful developer tools int
 ### Ticket Creator
 - **Quick Mode**: Fast ticket creation with direct input
 - **AI Assistant Mode**: Conversational chat that guides you through creating comprehensive tickets
+- **🎤 Voice Input**: NEW! Speak your responses instead of typing in AI Assistant mode
 - Asks targeted questions about user stories, descriptions, and acceptance criteria
 - Generates well-structured JIRA tickets
 - Creates tickets directly in JIRA or preview first
@@ -164,7 +165,8 @@ Open your browser to **http://localhost:3000**
    
    **AI Assistant Mode:**
    - Click "AI Assistant" button
-   - Answer the AI's questions about your feature
+   - Answer the AI's questions about your feature (type or use voice 🎤)
+   - **NEW Voice Input**: Click the microphone button to speak your responses
    - AI guides you through user stories, description, and acceptance criteria
    - Click "Generate Preview" or "Create in JIRA" when complete
 
@@ -258,6 +260,19 @@ personal_helper/
 - Check your internet connection
 - Enable `DEBUG_PUPPETEER=true` to see browser window
 
+## 🎤 Voice Input Feature
+
+The Ticket Creator now supports **voice input** in AI Assistant mode! Simply click the microphone button and speak your responses instead of typing.
+
+**Quick Start:**
+1. Navigate to Ticket Creator → AI Assistant
+2. Click the 🎤 microphone button
+3. Speak your message
+4. Click ⏹️ to stop and review
+5. Send your message
+
+**For detailed information**, see [VOICE_FEATURE.md](VOICE_FEATURE.md)
+
 ## 📝 License
 
 MIT
@@ -272,6 +287,7 @@ For issues or questions:
 1. Check the troubleshooting section
 2. Review console logs for detailed error messages
 3. Ensure all prerequisites are properly configured
+4. See [VOICE_FEATURE.md](VOICE_FEATURE.md) for voice input issues
 
 ---
 

@@ -288,6 +288,8 @@ const chatMessages = document.getElementById('chatMessages');
 const chatActions = document.getElementById('chatActions');
 const generateFromChatBtn = document.getElementById('generateFromChatBtn');
 const createFromChatBtn = document.getElementById('createFromChatBtn');
+const voiceBtn = document.getElementById('voiceBtn');
+const voiceStatus = document.getElementById('voiceStatus');
 
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -296,6 +298,138 @@ chatForm.addEventListener('submit', async (e) => {
 
 generateFromChatBtn.addEventListener('click', () => generateTicketFromChat(false));
 createFromChatBtn.addEventListener('click', () => generateTicketFromChat(true));
+
+// ============================================================================
+// VOICE RECOGNITION
+// ============================================================================
+
+let recognition = null;
+let isRecording = false;
+
+// Check if browser supports Web Speech API
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    
+    // Configure recognition
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    
+    // Handle recognition results
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+        
+        // Update the input with transcription
+        if (finalTranscript) {
+            chatInput.value += finalTranscript;
+        }
+        
+        // Show interim results in placeholder or as overlay
+        if (interimTranscript && !finalTranscript) {
+            chatInput.placeholder = `Listening: ${interimTranscript}...`;
+        }
+    };
+    
+    // Handle recognition errors
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        stopRecording();
+        
+        let errorMsg = 'Voice recognition error. ';
+        if (event.error === 'no-speech') {
+            errorMsg += 'No speech detected. Please try again.';
+        } else if (event.error === 'not-allowed') {
+            errorMsg += 'Microphone access denied. Please allow microphone access.';
+        } else {
+            errorMsg += event.error;
+        }
+        showError(errorMsg);
+    };
+    
+    // Handle recognition end
+    recognition.onend = () => {
+        if (isRecording) {
+            // If we're still supposed to be recording, restart
+            try {
+                recognition.start();
+            } catch (e) {
+                stopRecording();
+            }
+        } else {
+            stopRecording();
+        }
+    };
+    
+    // Voice button click handler
+    voiceBtn.addEventListener('click', () => {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+} else {
+    // Browser doesn't support speech recognition
+    voiceBtn.disabled = true;
+    voiceBtn.title = 'Voice input not supported in this browser';
+    voiceBtn.style.opacity = '0.5';
+    console.warn('Web Speech API not supported in this browser');
+}
+
+function startRecording() {
+    if (!recognition) return;
+    
+    try {
+        isRecording = true;
+        recognition.start();
+        
+        // Update UI
+        voiceBtn.classList.add('recording');
+        voiceBtn.textContent = '⏹️'; // Stop icon
+        voiceStatus.style.display = 'flex';
+        chatInput.placeholder = 'Listening...';
+        
+        // Disable send button while recording
+        document.getElementById('sendMessageBtn').disabled = true;
+    } catch (error) {
+        console.error('Error starting recognition:', error);
+        stopRecording();
+    }
+}
+
+function stopRecording() {
+    if (!recognition) return;
+    
+    try {
+        isRecording = false;
+        recognition.stop();
+        
+        // Update UI
+        voiceBtn.classList.remove('recording');
+        voiceBtn.textContent = '🎤'; // Microphone icon
+        voiceStatus.style.display = 'none';
+        chatInput.placeholder = 'Type your message or use voice...';
+        
+        // Re-enable send button
+        document.getElementById('sendMessageBtn').disabled = false;
+        
+        // Focus on input
+        chatInput.focus();
+    } catch (error) {
+        console.error('Error stopping recognition:', error);
+    }
+}
 
 async function initializeChat() {
     try {
