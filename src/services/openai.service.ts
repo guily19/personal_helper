@@ -1,12 +1,6 @@
 import OpenAI from "openai";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const MODEL = "gpt-4o-mini";
+const MODEL = "gpt-5-mini";
 
 let openai: OpenAI;
 

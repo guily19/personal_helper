@@ -375,7 +375,7 @@ app.post("/api/ticket-creator/chat/message", async (req: Request, res: Response)
 
     // Get AI response
     const systemPrompt = `You are a helpful Product Manager assistant helping users create comprehensive Jira tickets.
-Ask ONE question at a time about: user stories (who, what, why), detailed description, and acceptance criteria.
+Ask ONE question at a time about: user stories (who, what, why), detailed description, and acceptance criteria. If you think there is a gap of information, ask follow-up questions to gather more details.
 Be conversational and friendly. After gathering enough information (around 8-10 exchanges), let the user know they can generate the ticket.`;
 
     const aiResponse = await processChatMessage(session.messages, systemPrompt);
