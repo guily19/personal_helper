@@ -296,6 +296,14 @@ chatForm.addEventListener('submit', async (e) => {
     await sendChatMessage();
 });
 
+// Handle Enter key to send message (Shift+Enter for new line)
+chatInput.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        await sendChatMessage();
+    }
+});
+
 generateFromChatBtn.addEventListener('click', () => generateTicketFromChat(false));
 createFromChatBtn.addEventListener('click', () => generateTicketFromChat(true));
 
