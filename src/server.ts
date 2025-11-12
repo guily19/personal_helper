@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import fs from "fs/promises";
 import { initializeAnthropic } from "./services/anthropic.service.js";
 import { initializeOpenAI } from "./services/openai.service.js";
 
@@ -27,7 +28,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -49,6 +50,54 @@ app.get("/api/health", (req: Request, res: Response) => {
 });
 
 // PR Analyzer endpoints
+app.post("/api/pr-analyzer/download-report", async (req: Request, res: Response) => {
+  try {
+    const { ticketKey, summary, results } = req.body;
+
+    if (!ticketKey || !results) {
+      return res.status(400).json({ error: "Missing ticketKey or results" });
+    }
+
+    // Generate markdown report content
+    let markdownContent = `# PR Analysis Report: ${ticketKey}\n\n`;
+    markdownContent += `**Summary:** ${summary}\n\n`;
+    markdownContent += `**Generated:** ${new Date().toISOString()}\n\n`;
+    markdownContent += `---\n\n`;
+
+    results.forEach((result: any, index: number) => {
+      markdownContent += `## PR #${result.prInfo.number}: ${result.prInfo.title}\n\n`;
+      markdownContent += `- **Repository:** ${result.prInfo.owner}/${result.prInfo.repo}\n`;
+      markdownContent += `- **Files Changed:** ${result.filesCount}\n`;
+      markdownContent += `- **URL:** ${result.prInfo.url}\n\n`;
+      markdownContent += `### Analysis\n\n`;
+      markdownContent += `${result.analysis}\n\n`;
+      markdownContent += `---\n\n`;
+    });
+
+    // Ensure reports directory exists
+    const reportsDir = path.join(__dirname, "../reports");
+    await fs.mkdir(reportsDir, { recursive: true });
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `${ticketKey}_${timestamp}.md`;
+    const filepath = path.join(reportsDir, filename);
+
+    // Write file
+    await fs.writeFile(filepath, markdownContent, "utf-8");
+
+    res.json({
+      success: true,
+      message: "Report saved successfully",
+      filename,
+      filepath,
+    });
+  } catch (error: any) {
+    console.error("Error saving report:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post("/api/pr-analyzer/analyze", async (req: Request, res: Response) => {
   try {
     const { Octokit } = await import("@octokit/rest");

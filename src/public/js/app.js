@@ -1,3 +1,13 @@
+// Configure marked.js for markdown rendering
+if (typeof marked !== 'undefined') {
+    marked.setOptions({
+        breaks: true,
+        gfm: true,
+        headerIds: true,
+        mangle: false
+    });
+}
+
 // Tab Navigation
 const tabBtns = document.querySelectorAll('.tab-btn');
 const tabPanes = document.querySelectorAll('.tab-pane');
@@ -90,13 +100,13 @@ function displayPRResults(data) {
     html += `<h2>📊 PR Analysis Results for ${data.jiraTicket.key}</h2>`;
     html += `<p><strong>Summary:</strong> ${data.jiraTicket.summary}</p>`;
     html += `<p><strong>Status:</strong> ${data.jiraTicket.status}</p>`;
-    
+
     if (data.jiraTicket.acceptanceCriteria && data.jiraTicket.acceptanceCriteria !== 'No acceptance criteria found') {
         html += '<details style="margin-top: 15px;"><summary style="cursor: pointer; font-weight: 600;">Acceptance Criteria</summary>';
         html += `<pre style="margin-top: 10px;">${data.jiraTicket.acceptanceCriteria}</pre></details>`;
     }
     html += '</div>';
-    
+
     if (data.results && data.results.length > 0) {
         data.results.forEach((result, index) => {
             html += '<div class="result-card">';
@@ -107,12 +117,74 @@ function displayPRResults(data) {
             html += `<p><strong>Files Changed:</strong> ${result.filesCount}</p>`;
             html += `<p><strong>URL:</strong> <a href="${result.prInfo.url}" target="_blank">${result.prInfo.url}</a></p>`;
             html += '<h4 style="margin-top: 20px;">Analysis:</h4>';
-            html += `<pre>${result.analysis}</pre>`;
+
+            // Parse and render markdown
+            if (typeof marked !== 'undefined' && result.analysis) {
+                const markdownHtml = marked.parse(result.analysis);
+                html += `<div class="markdown-content">${markdownHtml}</div>`;
+            } else {
+                // Fallback to pre if marked is not available
+                html += `<pre>${result.analysis}</pre>`;
+            }
+
             html += '</div>';
         });
     }
-    
+
+    // Add download button at the end
+    html += '<div class="card" style="text-align: center; margin-top: 20px;">';
+    html += '<button id="downloadReportBtn" class="btn btn-primary" style="margin: 10px auto;">';
+    html += '<span>📥 Download Report (MD)</span>';
+    html += '</button>';
+    html += '</div>';
+
     prResults.innerHTML = html;
+
+    // Store data for download functionality
+    window.currentPRAnalysisData = data;
+
+    // Add event listener to download button
+    const downloadBtn = document.getElementById('downloadReportBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadPRReport);
+    }
+}
+
+async function downloadPRReport() {
+    const data = window.currentPRAnalysisData;
+
+    if (!data) {
+        showError('No analysis data available');
+        return;
+    }
+
+    try {
+        showLoading('Saving report to reports folder...');
+
+        const response = await fetch('/api/pr-analyzer/download-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ticketKey: data.jiraTicket.key,
+                summary: data.jiraTicket.summary,
+                results: data.results
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to save report');
+        }
+
+        // Show success message
+        hideLoading();
+        alert(`Report saved successfully!\n\nFile: ${result.filename}\nLocation: reports/${result.filename}`);
+    } catch (error) {
+        console.error('Error:', error);
+        hideLoading();
+        showError(error.message);
+    }
 }
 
 // ============================================================================
